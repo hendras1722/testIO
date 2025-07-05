@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { Suspense, useState } from 'react'
 import {
   TextField,
   Button,
@@ -60,49 +60,56 @@ export default function LoginForm() {
         Login
       </Typography>
 
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
-        <Box mb={2}>
-          <TextField
-            label="Email"
-            fullWidth
-            type="email"
-            {...register('email')}
-            error={!!errors.email}
-            helperText={errors.email?.message}
-          />
-        </Box>
+      <Suspense>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+          <Box mb={2}>
+            <TextField
+              label="Email"
+              fullWidth
+              type="email"
+              {...register('email')}
+              error={!!errors.email}
+              helperText={errors.email?.message}
+            />
+          </Box>
 
-        <Box mb={3}>
-          <TextField
-            fullWidth
-            label="Password"
-            type={showPassword ? 'text' : 'password'}
-            slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="start">
-                    <button onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <EyeOff /> : <Eye />}
-                    </button>
-                  </InputAdornment>
-                ),
-              },
-            }}
-            error={!!errors.password}
-            helperText={errors.password?.message}
-            {...register('password')}
-          />
-        </Box>
+          <Box mb={3}>
+            <TextField
+              fullWidth
+              label="Password"
+              type={showPassword ? 'text' : 'password'}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="start">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault()
+                          setShowPassword(!showPassword)
+                        }}
+                      >
+                        {showPassword ? <EyeOff /> : <Eye />}
+                      </button>
+                    </InputAdornment>
+                  ),
+                },
+              }}
+              error={!!errors.password}
+              helperText={errors.password?.message}
+              {...register('password')}
+            />
+          </Box>
 
-        <Button
-          type="submit"
-          variant="contained"
-          fullWidth
-          disabled={isPending}
-        >
-          {(isPending && 'Loading...') || 'Login'}
-        </Button>
-      </form>
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            disabled={isPending}
+          >
+            {(isPending && 'Loading...') || 'Login'}
+          </Button>
+        </form>
+      </Suspense>
     </Paper>
   )
 }

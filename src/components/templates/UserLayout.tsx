@@ -3,15 +3,31 @@
 import DataTable from '@/components/molecules/DataTable'
 import { useApi } from '@/composable/useApi'
 import { BaseResponse } from '@/type/baseResponse'
-import { Badge, Button, Grid, InputAdornment, TextField } from '@mui/material'
-import { Search } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import {
+  Badge,
+  Box,
+  Button,
+  Grid,
+  InputAdornment,
+  TextField,
+} from '@mui/material'
+import { Eye, EyeOff, Search } from 'lucide-react'
+import { use, useEffect, useMemo, useState } from 'react'
 import { debounce } from 'radash'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import Modal from '@/components/atoms/Modal'
 import Toast from '@/components/molecules/Toast'
 import type { User } from '@/type/Users'
+import z from 'zod'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+
+const formSchema = z.object({
+  password: z.string(),
+})
+
+type PasswordSchema = z.infer<typeof formSchema>
 
 export default function UserLayout() {
   const [open, setOpen] = useState(false)
@@ -30,6 +46,8 @@ export default function UserLayout() {
     message: '',
     severity: 'error',
   })
+  const [idPassword, setIdPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   const columns: {
     accessor?: keyof User
@@ -80,12 +98,20 @@ export default function UserLayout() {
         return (
           <>
             <Button
-              href={`/admin/users/edit/${row.id}`}
               variant="text"
               color="success"
               className="text-nowrap"
+              onClick={() => setIdPassword(row.id)}
             >
-              Edit
+              Update Password
+            </Button>
+            <Button
+              href={`/admin/users/edit/${row.id}`}
+              variant="text"
+              color="primary"
+              className="text-nowrap"
+            >
+              Update Info
             </Button>
             <Button
               variant="text"
@@ -103,6 +129,15 @@ export default function UserLayout() {
       },
     },
   ] as const
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+  } = useForm<PasswordSchema>({
+    resolver: zodResolver(formSchema),
+  })
 
   const router = useRouter()
   const filterParams = useMemo(() => {
@@ -162,6 +197,38 @@ export default function UserLayout() {
     }
   }, [filterParams])
 
+  const paramsIDPassword = useMemo(() => {
+    return idPassword
+  }, [idPassword])
+
+  const { mutate: UpdatePassword, isPending: loadingUpdatePassword } = useApi<
+    BaseResponse<PasswordSchema>,
+    { password: string }
+  >({
+    url: '/v1/api/users/' + paramsIDPassword + '/change-password',
+    method: 'POST',
+    onSuccess: () => {
+      setToast({
+        open: true,
+        message: 'Update Password Success',
+        severity: 'success',
+      })
+      setIdPassword('')
+      setValue('password', '')
+    },
+    onError: (error) => {
+      setToast({
+        open: true,
+        message: 'Update Password Failed' + error.message,
+        severity: 'error',
+      })
+    },
+  })
+
+  const onSubmit = (data: PasswordSchema) => {
+    UpdatePassword(data)
+  }
+
   return (
     <>
       <h5>Users</h5>
@@ -190,6 +257,60 @@ export default function UserLayout() {
             Delete
           </Button>
         </div>
+      </Modal>
+
+      <Modal
+        open={!!idPassword}
+        setOpen={() => setIdPassword('')}
+        title="Update Password User"
+        contentText=""
+      >
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-5" noValidate>
+          <Box mb={2}>
+            <TextField
+              fullWidth
+              label="Password"
+              type={showPassword ? 'text' : 'password'}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="start">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault()
+                          setShowPassword(!showPassword)
+                        }}
+                      >
+                        {showPassword ? <EyeOff /> : <Eye />}
+                      </button>
+                    </InputAdornment>
+                  ),
+                },
+              }}
+              error={!!errors.password}
+              helperText={errors.password?.message}
+              {...register('password')}
+            />
+          </Box>
+          <div className="my-5 flex justify-end gap-2">
+            <Button
+              variant="text"
+              color="inherit"
+              onClick={() => setIdPassword('')}
+              disabled={loadingUpdatePassword}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={loadingUpdatePassword}
+            >
+              Submit
+            </Button>
+          </div>
+        </form>
       </Modal>
       <Grid container spacing={2} marginTop={2}>
         <Grid size={{ lg: 10, md: 10, sm: 12, xs: 12 }}>

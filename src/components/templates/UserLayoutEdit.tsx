@@ -24,7 +24,6 @@ const ACCEPTED_IMAGE_TYPES = [
 const formSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   email: z.string().email('Format email tidak valid'),
-  password: z.string().optional(),
   image: z
     .any()
     .refine(
@@ -91,7 +90,6 @@ export default function LayoutEditUser() {
   useEffect(() => {
     if (detailData) {
       setValue('name', detailData.result.name)
-      setValue('password', detailData.result.password)
       setValue('email', detailData.result.email)
       if (detailData.result.image) {
         fetch('/v1/storage/' + detailData.result.image).then((res) =>
@@ -141,28 +139,6 @@ export default function LayoutEditUser() {
 
   const router = useRouter()
 
-  const { mutate: UpdatePassword, isPending: loadingUpdatePassword } = useApi<
-    BaseResponse<UserSchema>,
-    { password: string }
-  >({
-    url: '/v1/api/users/' + searchParams.slug + '/change-password',
-    method: 'POST',
-    onSuccess: () => {
-      setShowToast({
-        open: true,
-        message: 'Update Password Success',
-        severity: 'success',
-      })
-      router.push('/admin/users')
-    },
-    onError: (error) => {
-      setShowToast({
-        open: true,
-        message: 'Update Password Failed' + error.message,
-        severity: 'error',
-      })
-    },
-  })
   const { mutate, isPending } = useApi<BaseResponse<UserSchema>, FormData>({
     url: '/v1/api/users/' + searchParams.slug + '/change-info',
     method: 'POST',
@@ -172,9 +148,7 @@ export default function LayoutEditUser() {
         message: 'Update Info Success',
         severity: 'success',
       })
-      if (!getValues('password')) {
-        router.push('/admin/users')
-      }
+      router.push('/admin/users')
     },
     onError: (error) => {
       setShowToast({
@@ -189,23 +163,14 @@ export default function LayoutEditUser() {
     const formData = new FormData()
 
     for (let item of Object.keys(data)) {
-      if (item !== 'password') {
-        if (item === 'image') {
-          const file = data.image?.[0]
-          if (file) {
-            formData.append('image', file)
-          }
-        } else {
-          formData.append(item, String(data[item]))
+      if (item === 'image') {
+        const file = data.image?.[0]
+        if (file) {
+          formData.append('image', file)
         }
       }
     }
     mutate(formData)
-    if (data.password) {
-      UpdatePassword({
-        password: data.password,
-      })
-    }
   }
 
   return (
@@ -258,29 +223,6 @@ export default function LayoutEditUser() {
         <Box mb={2}>
           <TextField
             fullWidth
-            label="Password"
-            type={showPassword ? 'text' : 'password'}
-            slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="start">
-                    <button onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <EyeOff /> : <Eye />}
-                    </button>
-                  </InputAdornment>
-                ),
-              },
-            }}
-            focused={getValues('password') !== ''}
-            error={!!errors.password}
-            helperText={errors.password?.message}
-            {...register('password')}
-          />
-        </Box>
-
-        <Box mb={2}>
-          <TextField
-            fullWidth
             label="Email"
             error={!!errors.email}
             helperText={errors.email?.message}
@@ -294,7 +236,7 @@ export default function LayoutEditUser() {
             variant="text"
             color="secondary"
             href="/admin/users"
-            disabled={isPending || loadingGetDetail || loadingUpdatePassword}
+            disabled={isPending || loadingGetDetail}
           >
             Cancel
           </Button>
@@ -303,7 +245,7 @@ export default function LayoutEditUser() {
             variant="contained"
             color="primary"
             type="submit"
-            disabled={isPending || loadingGetDetail || loadingUpdatePassword}
+            disabled={isPending || loadingGetDetail}
           >
             Submit
           </Button>
