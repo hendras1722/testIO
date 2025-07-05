@@ -2,7 +2,7 @@
 
 import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
-import { SquaresExclude, LogOut } from 'lucide-react'
+import { SquaresExclude, LogOut, User } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { Else, If } from '../atoms/if'
 
@@ -34,6 +34,27 @@ export default function ListMenuSidebar({
               color={pathName === '/admin/inventory' ? 'primary' : 'default'}
             >
               <SquaresExclude />
+            </IconButton>
+          </Else>
+        </If>
+
+        <If condition={!sidebarCollapsed}>
+          <Button
+            variant={pathName === '/admin/users' ? 'contained' : 'text'}
+            href="/admin/users"
+            startIcon={<User />}
+            size="small"
+            className={`!shadow-none !w-full flex !justify-start`}
+          >
+            {!sidebarCollapsed && 'user'}
+          </Button>
+          <Else key="else-1">
+            <IconButton
+              href="/admin/user"
+              aria-label="dashboard"
+              color={pathName === '/admin/users' ? 'primary' : 'default'}
+            >
+              <User />
             </IconButton>
           </Else>
         </If>

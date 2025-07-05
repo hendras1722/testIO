@@ -18,6 +18,7 @@ type ApiOptions<TResponse, TBody = unknown> = {
   autoRefetchOnWindowFocus?: boolean
   staleTime?: number
   onSuccess?: (data: TResponse) => void
+  onError?: (error: Error) => void
 }
 
 function urlToQueryKey(url: string): string[] {
@@ -75,6 +76,9 @@ export function useApi<TResponse, TBody = unknown>(
     onSuccess: (data) => {
       options.onSuccess?.(data)
       queryClient.invalidateQueries({ queryKey: key })
+    },
+    onError: (error: Error) => {
+      options.onError?.(error)
     },
   }) as any
 }
