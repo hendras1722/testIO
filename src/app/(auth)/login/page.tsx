@@ -1,13 +1,21 @@
 'use client'
 
-import React from 'react'
-import { TextField, Button, Box, Typography, Paper } from '@mui/material'
+import React, { useState } from 'react'
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  Paper,
+  InputAdornment,
+} from '@mui/material'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useApi } from '@/composable/useApi'
 import { LoginRequest, LoginResult } from '@/type/login'
 import { BaseResponse } from '@/type/baseResponse'
+import { Eye, EyeOff } from 'lucide-react'
 
 const loginSchema = z.object({
   email: z
@@ -20,6 +28,8 @@ const loginSchema = z.object({
 type LoginFormInputs = z.infer<typeof loginSchema>
 
 export default function LoginForm() {
+  const [showPassword, setShowPassword] = useState(false)
+
   const {
     register,
     handleSubmit,
@@ -64,12 +74,23 @@ export default function LoginForm() {
 
         <Box mb={3}>
           <TextField
-            label="Password"
             fullWidth
-            type="password"
-            {...register('password')}
+            label="Password"
+            type={showPassword ? 'text' : 'password'}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="start">
+                    <button onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? <EyeOff /> : <Eye />}
+                    </button>
+                  </InputAdornment>
+                ),
+              },
+            }}
             error={!!errors.password}
             helperText={errors.password?.message}
+            {...register('password')}
           />
         </Box>
 
