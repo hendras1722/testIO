@@ -33,15 +33,15 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['lh3.googleusercontent.com'],
   },
-  // async redirects() {
-  //   return [
-  //     {
-  //       source: '/',
-  //       destination: '/',
-  //       permanent: true,
-  //     },
-  //   ]
-  // },
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/admin/inventory',
+        permanent: true,
+      },
+    ]
+  },
   poweredByHeader: false,
   headers: async () => [
     {
