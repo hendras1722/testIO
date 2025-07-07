@@ -66,7 +66,6 @@ export default function LayoutEditUser() {
 
   const watchedImage = watch('image')
   const watchedName = watch('name')
-  const watchedPassword = watch('password')
 
   const searchParams = useParams()
 
@@ -114,7 +113,7 @@ export default function LayoutEditUser() {
   }, [detailData])
 
   useEffect(() => {
-    if (watchedPassword || watchedName) {
+    if (watchedName) {
       setIsDirty(true)
     } else {
       setIsDirty(false)
